@@ -1,41 +1,18 @@
-import mongoose from "mongoose";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaClient } from "@/generated/prisma/client";
 
-const MONGODB_URI = process.env.MONGODB_URI!;
+const globalForPrisma = globalThis as unknown as {
+  prisma?: PrismaClient;
+};
 
-if (!MONGODB_URI) {
-  throw new Error("Please define the MONGODB_URI environment variable");
-}
+export const prisma =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    adapter: new PrismaPg({
+      connectionString: process.env.DATABASE_URL,
+    }),
+  });
 
-let cached = global.mongoose;
-
-if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null };
-}
-
-export async function connectToDatabase() {
-  if (cached.conn) {
-    return cached.conn;
-  }
-
-  if (!cached.promise) {
-    const opts = {
-      bufferCommands: true,
-      maxPoolSize: 10,
-    };
-    mongoose
-    .connect(MONGODB_URI, opts)
-    .then(() => 
-      mongoose.connection)
-    
-    try {
-        cached.conn = await cached.promise;
-    } catch (error) {
-        cached.promise = null;
-        throw error;
-    }
-  }
-
-  const conn = await cached.promise;
-  cached.conn = conn;
-  return cached.conn;
+if (process.env.NODE_ENV !== "production") {
+  globalForPrisma.prisma = prisma;
 }
