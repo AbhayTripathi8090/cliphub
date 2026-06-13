@@ -1,31 +1,22 @@
 import bcrypt from "bcryptjs";
 
+import { registerSchema } from "@/features/auth/schemas";
 import { prisma } from "@/lib/db";
 
-type RegisterInput = {
-  name?: string;
-  email?: string;
-  password?: string;
-};
+type RegisterInput = unknown;
 
 export async function registerUser(input: RegisterInput) {
-  const name = input.name?.trim();
-  const email = input.email?.trim().toLowerCase();
-  const password = input.password;
+  const parsedInput = registerSchema.safeParse(input);
 
-  if (!email || !password) {
+  if (!parsedInput.success) {
     return {
       status: 400,
-      message: "Email and password are required",
+      message: parsedInput.error.issues[0]?.message ?? "Invalid input",
     };
   }
 
-  if (password.length < 6) {
-    return {
-      status: 400,
-      message: "Password must be at least 6 characters",
-    };
-  }
+  const { email, password } = parsedInput.data;
+  const name = parsedInput.data.name || undefined;
 
   const existingUser = await prisma.user.findUnique({
     where: { email },
