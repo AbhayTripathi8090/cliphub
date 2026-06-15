@@ -1,0 +1,53 @@
+:root {
+  /* Brand Colors */
+  --primary: #9333ea;
+  --primary-dark: #7e22ce;
+
+  --secondary: #2563eb;
+  --secondary-dark: #1d4ed8;
+
+  /* Background */
+  --background: #ffffff;
+  --foreground: #111827;
+
+  /* Cards */
+  --card: #ffffff;
+  --card-foreground: #111827;
+
+  /* Borders */
+  --border: #e5e7eb;
+
+  /* Muted */
+  --muted: #f3f4f6;
+  --muted-foreground: #6b7280;
+
+  /* Success */
+  --success: #22c55e;
+
+  /* Error */
+  --error: #ef4444;
+
+  /* Radius */
+  --radius: 12px;
+
+  /* Gradients */
+  --gradient-primary:
+    linear-gradient(
+      135deg,
+      #9333ea 0%,
+      #2563eb 100%
+    );
+}
+
+.dark {
+  --background: #09090b;
+  --foreground: #fafafa;
+
+  --card: #18181b;
+  --card-foreground: #fafafa;
+
+  --border: #27272a;
+
+  --muted: #18181b;
+  --muted-foreground: #a1a1aa;
+}
