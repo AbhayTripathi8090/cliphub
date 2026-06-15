@@ -1,30 +1,41 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn } from "next-auth/react";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
+
+import TextInput from "@/components/ui/TextInput";
+import {
+  loginSchema,
+  type LoginFormValues,
+} from "@/features/auth/schemas";
 
 export default function LoginForm() {
   const router = useRouter();
 
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
+  const [error, setError] = useState("");
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
   });
 
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-
+  async function onSubmit(values: LoginFormValues) {
     setError("");
-    setLoading(true);
 
     try {
       const res = await signIn("credentials", {
-        email: form.email,
-        password: form.password,
+        email: values.email,
+        password: values.password,
         redirect: false,
       });
 
@@ -37,44 +48,36 @@ export default function LoginForm() {
       router.refresh();
     } catch {
       setError("Something went wrong");
-    } finally {
-      setLoading(false);
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-md space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-md space-y-4">
       {error && (
         <p className="rounded bg-red-100 p-3 text-sm text-red-700">
           {error}
         </p>
       )}
 
-      <input
-        className="w-full rounded border px-3 py-2"
+      <TextInput
         placeholder="Email"
         type="email"
-        value={form.email}
-        onChange={(e) =>
-          setForm({ ...form, email: e.target.value })
-        }
+        error={errors.email?.message}
+        {...register("email")}
       />
 
-      <input
-        className="w-full rounded border px-3 py-2"
+      <TextInput
         placeholder="Password"
         type="password"
-        value={form.password}
-        onChange={(e) =>
-          setForm({ ...form, password: e.target.value })
-        }
+        error={errors.password?.message}
+        {...register("password")}
       />
 
       <button
-        disabled={loading}
+        disabled={isSubmitting}
         className="w-full rounded bg-black px-4 py-2 text-white disabled:opacity-60"
       >
-        {loading ? "Logging in..." : "Login"}
+        {isSubmitting ? "Logging in..." : "Login"}
       </button>
     </form>
   );
